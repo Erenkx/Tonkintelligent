@@ -41,10 +41,9 @@ def build_file_index(
 
         file_index[project_name] = file_list
 
-        with open(os.path.join(project_root, 'file_index.json'), 'w') as fout:
-            json.dump(file_index, fout, indent=4)
 
-
+    with open(os.path.join(project_root, 'file_index.json'), 'w') as fout:
+        json.dump(file_index, fout, indent=4)
 if __name__ == "__main__":
     project_root = os.path.join(
         os.path.dirname(__file__), '..', 'data', 'projects'
