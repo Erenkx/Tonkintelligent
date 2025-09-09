@@ -20,7 +20,7 @@ Answer: """
 
 def format_prompt(
     query: str,
-    chunks: list[str],
+    chunks: list[dict],
     top_indices: list[int]
 ) -> str:
     """
@@ -28,7 +28,7 @@ def format_prompt(
 
     Args:
         query (str): The user query.
-        chunks (list[str]): The retrieved document chunks.
+        chunks (list[dict]): The list of document chunks with metadata.
         top_indices (list[int]): The indices of the top chunks.
 
     Returns:
