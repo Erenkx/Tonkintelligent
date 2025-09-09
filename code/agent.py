@@ -140,7 +140,7 @@ def execute_action(
     project_root: str,
     query: str,
     file_index: dict
-):
+) -> str:
     """
     Executes the decided action.
 
