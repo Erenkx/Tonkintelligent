@@ -13,7 +13,7 @@ from faiss_search import load_index, embed_query, search_faiss_index
 
 MODEL_NAME = 'TinyLlama/TinyLlama-1.1B-Chat-v1.0'
 AGENT_PROMPT = (
-"""You are an intelligent assisteant that analyzes user queries to decide what
+"""You are an intelligent assistant that analyzes user queries to decide what
 action to take.
 
 You must always respond in only a valid JSON format as described below:
