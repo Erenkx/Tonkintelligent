@@ -137,6 +137,7 @@ def run_rag(
 def execute_action(
     action: str,
     project: str | None,
+    project_root: str,
     query: str,
     file_index: dict
 ):
@@ -148,6 +149,8 @@ def execute_action(
             "find_files", or "both").
         project (str | None): The project name, or None if not 
             specified.
+        project_root (str): The root directory containing project
+            folders.
         query (str): The user query.
         file_index (dict): The file index mapping project names 
             to file paths.
@@ -197,6 +200,7 @@ if __name__ == "__main__":
         response = execute_action(
             action=action,
             project=project,
+            project_root=project_root,
             query=query,
             file_index=file_index
         )
