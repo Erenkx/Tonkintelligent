@@ -2,20 +2,39 @@
 Retrieval-Augmented Generation (RAG) implementation.
 """
 
-from transformers import AutoTokenizer, AutoModelForCausalLM
+from openai import OpenAI
 
 
-PROMPT = (
-"""You are a helpful assistant. Use the following context to reason and
-answer the question.
+SYSTEM_PROMPT = (
+    "You are a helpful assistant that provides accurate and concise answers "
+    "based on the provided context. If the context does not contain enough "
+    "information to answer the question, respond with 'I don't know.'"
+)
 
-Context: 
+USER_PROMPT = (
+"""Context: 
 {context}
 
 User Question: {query}
 
 Answer: """
 )
+
+
+def load_openai_api_key(key_path: str) -> OpenAI:
+    """
+    Loads the OpenAI API key from a file and sets it in the openai module.
+
+    Args:
+        key_path (str): The path to the file containing the API key.
+
+    Returns:
+        OpenAI: An instance of the OpenAI client initialized with the API key.
+    """
+    with open(key_path, 'r') as fin:
+        api_key = fin.read().strip()
+    
+    return OpenAI(api_key=api_key)
 
 
 def format_prompt(
@@ -43,38 +62,36 @@ def format_prompt(
         context += f'{metadata["page_number"]}]\n{content}\n\n'
     context = context.strip()
 
-    return PROMPT.format(context=context, query=query)
+    return USER_PROMPT.format(context=context, query=query)
 
 
-def call_local_model(
+def call_openai_model(
+    client: OpenAI,
     prompt: str,
-    model_name: str,
+    model_name: str = 'gpt-3.5-turbo',
     max_tokens: int = 512
 ) -> str:
     """
-    Calls a local language model to generate a response.
+    Calls the OpenAI API to generate a response.
 
     Args:
+        client (OpenAI): An instance of the OpenAI client.
         prompt (str): The input prompt for the model.
-        model_name (str): The name or path of the local model.
+        model_name (str): The name of the OpenAI model to use.
         max_tokens (int): Maximum number of tokens to generate. 
             Default is 512.
 
     Returns:
         str: The generated response from the model.
     """
-    tokenizer = AutoTokenizer.from_pretrained(model_name)
-    model = AutoModelForCausalLM.from_pretrained(model_name)
-
-    inputs = tokenizer(prompt, return_tensors='pt', truncation=True)
-    outputs = model.generate(
-        **inputs,
-        max_new_tokens=max_tokens,
-        do_sample=False
-    )
-    response = tokenizer.decode(
-        outputs[0],
-        skip_special_tokens=True
+    response = client.chat.completions.create(
+        model=model_name,
+        messages=[
+            {'role': 'system', 'content': SYSTEM_PROMPT},
+            {'role': 'user', 'content': prompt}
+        ],
+        max_tokens=max_tokens,
+        temperature=0.0
     )
 
-    return response.split(prompt)[-1].strip()
+    return response.choices[0].message.content.strip()
