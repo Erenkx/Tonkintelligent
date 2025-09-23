@@ -1,12 +1,12 @@
 """
-Embeds text chunks using SentenceTransformer and saves the embeddings to
+Embeds text chunks using OpenAI and saves the embeddings to
 a .npy file or embedded_chunks.json with metadata.
 """
 
 import json
 
 import numpy as np
-from sentence_transformers import SentenceTransformer
+from openai import OpenAI
 
 
 def _load_chunks(
@@ -64,24 +64,52 @@ def _save_embedded_chunks(
     print(f'Saved embedded chunks to {output_path}')
 
 
+def _embed_with_openai(
+    client: OpenAI,
+    texts: list[str],
+    model_name: str = 'text-embedding-3-small'
+) -> np.ndarray:
+    """
+    Embeds a list of texts using the OpenAI API.
+    
+    Args:
+        client (OpenAI): An instance of the OpenAI client.
+        texts (list[str]): List of texts to embed.
+        model_name (str): Name of the OpenAI embedding model to use.
+            Default is 'text-embedding-3-small'.
+        
+    Returns:
+        np.ndarray: Array of embeddings.
+    """
+    response = client.embeddings.create(
+        input=texts,
+        model=model_name
+    )
+    embeddings = [data.embedding for data in response.data]
+
+    return np.array(embeddings, dtype=np.float32)
+
+
 def embed_chunks(
+    client: OpenAI,
     input_path: str,
     out_npy: str = None,
     out_json: str = None,
-    model_name: str = 'all-MiniLM-L6-v2'
+    model_name: str = 'text-embedding-3-small'
 ) -> None:
     """
-    Embeds text chunks from a JSON file using SentenceTransformer and
+    Embeds text chunks from a JSON file using OpenAI and
     saves the embeddings to a .npy file or embedded_chunks.json with
     metadata.
     
     Args:
+        client (OpenAI): An instance of the OpenAI client.
         input_path (str): Path to the JSON file containing text chunks.
         out_npy (str): Path to save the .npy file. Default is None.
         out_json (str): Path to save the JSON file with embeddings.
             Default is None.
-        model_name (str): Name of the SentenceTransformer model to use.
-            Default is 'all-MiniLM-L6-v2'.
+        model_name (str): Name of the OpenAI model to use.
+            Default is 'text-embedding-3-small'.
     """
     print('-' * 72)
 
@@ -92,18 +120,8 @@ def embed_chunks(
 
     print('-' * 72)
 
-    print(f'Loading model {model_name}...')
-    model = SentenceTransformer(model_name)
-    print('Model loaded.')
-
-    print('-' * 72)
-
     print('Embedding chunks...')
-    embeddings = model.encode(
-        texts,
-        show_progress_bar=True,
-        normalize_embeddings=True
-    )
+    embeddings = _embed_with_openai(client, texts, model_name)
 
     if out_npy:
         _save_embeddings_npy(embeddings, out_npy)

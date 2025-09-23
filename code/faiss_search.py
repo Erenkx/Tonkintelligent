@@ -4,7 +4,7 @@ Performs Top-K semantic search using a FAISS index.
 
 import faiss
 import numpy as np
-from sentence_transformers import SentenceTransformer
+from openai import OpenAI
 
 
 def load_index(
@@ -23,24 +23,29 @@ def load_index(
 
 
 def embed_query(
+    client: OpenAI,
     query: str,
-    model_name: str = 'all-MiniLM-L6-v2'
+    model_name: str = 'text-embedding-3-small'
 ) -> np.ndarray:
     """
-    Embeds a query string using a sentence transformer model.
+    Embeds a query string using the OpenAI API.
 
     Args:
+        client (OpenAI): An instance of the OpenAI client.
         query (str): The query string to embed.
-        model_name (str): Name of the SentenceTransformer model to use.
-            Default is 'all-MiniLM-L6-v2'.
+        model_name (str): Name of the OpenAI model to use.
+            Default is 'text-embedding-3-small'.
 
     Returns:
         np.ndarray: The embedded query vector.
     """
-    model = SentenceTransformer(model_name)
-    embedding = model.encode([query], normalize_embeddings=True)
+    response = client.embeddings.create(
+        input=[query],
+        model=model_name
+    )
+    embedding = np.array([response.data[0].embedding], dtype=np.float32)
 
-    return embedding.astype('float32')
+    return embedding
 
 
 def search_faiss_index(
