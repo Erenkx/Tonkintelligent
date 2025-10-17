@@ -9,7 +9,8 @@ from rag import format_prompt, load_openai_api_key, call_openai_model
 
 MODEL_ENUM = {
     'OpenAI GPT-3.5': 'gpt-3.5-turbo',
-    'OpenAI GPT-4': 'gpt-4'
+    'OpenAI GPT-4o-mini': 'gpt-4o-mini',
+    'OpenAI GPT-4o': 'gpt-4o'
 }
 
 
@@ -19,7 +20,7 @@ def main():
 
     model = st.radio(
         'Select Model:',
-        ('OpenAI GPT-3.5', 'OpenAI GPT-4'),
+        ('OpenAI GPT-3.5', 'OpenAI GPT-4o-mini', 'OpenAI GPT-4o'),
         horizontal=True
     )
 

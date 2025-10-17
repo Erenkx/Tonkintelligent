@@ -6,14 +6,18 @@ from openai import OpenAI
 
 
 SYSTEM_PROMPT = (
-    "You are a helpful assistant that provides accurate and concise answers "
-    "based on the provided context. If the context does not contain enough "
-    "information to answer the question, respond with 'I don't know.'"
+    "You are an expert assistant specialized in providing factual, well-reasoned, and concise answers "
+    "based strictly on the provided context. "
+    "When answering, always use information from the context unless clearly instructed otherwise. "
+    "If the context does not contain enough information to answer the question accurately, respond with: 'I don't know based on the given information.' "
+    "Do not make up or guess any details. Keep the answer clear, structured, and neutral."
 )
 
 USER_PROMPT = (
-"""Context: 
+"""You are given the following retrieved context from documents:
 {context}
+
+Now, answer the user's question below based strictly on that context.
 
 User Question: {query}
 
@@ -91,7 +95,7 @@ def call_openai_model(
             {'role': 'user', 'content': prompt}
         ],
         max_tokens=max_tokens,
-        temperature=0.0
+        temperature=0.3
     )
 
     return response.choices[0].message.content.strip()
