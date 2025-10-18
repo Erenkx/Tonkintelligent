@@ -13,27 +13,64 @@ MODEL_ENUM = {
     'OpenAI GPT-4o': 'gpt-4o'
 }
 
+TONKIN_LOGO_URL = 'https://d2pszc44x0pp45.cloudfront.net/release-20250916/assets/tonkin-logo-d7693593.svg'
+
+TONKIN_LOGO_COLOR = '#5E3F99'
+
 
 def main():
-    st.title('Tonkintelligent')
-    st.write("Search Tonkin's legacy project data with AI-powered retrieval.")
+    st.markdown(f"""
+        <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-    model = st.radio(
-        'Select Model:',
-        ('OpenAI GPT-3.5', 'OpenAI GPT-4o-mini', 'OpenAI GPT-4o'),
-        horizontal=True
+                
+        <style>
+            .header-container {{
+                display: flex;
+                align-items: flex-start;
+            }}
+            .header-logo {{
+                width: 200px;
+            }}
+            .header-text {{
+                font-family: 'Nunito Sans', sans-serif;
+                font-size: 57px;
+                font-weight: 500;
+                color: {TONKIN_LOGO_COLOR};
+                margin-right: 8px;
+                margin-top: -9px;
+            }}
+        </style>
+                
+        <div class="header-container">
+            <img src={TONKIN_LOGO_URL} class="header-logo">
+            <div class="header-text">elligent</div>
+        </div>
+        """,
+        unsafe_allow_html=True
     )
+    st.write("Search Tonkin's legacy project data with AI-powered retrieval.")
 
     project_folder = os.path.join(
         os.path.dirname(__file__), '..', 'data', 'projects'
     )
     projects = os.listdir(project_folder)
-    project_name = st.selectbox(
-        'Select Project:',
-        projects
-    )
 
-    query = st.text_input('Enter your query:')
+    with st.expander('Advanced Options'):
+        model = st.radio(
+            'Select Model:',
+            ('OpenAI GPT-3.5', 'OpenAI GPT-4o-mini', 'OpenAI GPT-4o'),
+            horizontal=True,
+            index=1
+        )
+
+        projects.insert(0, 'All Projects')
+        project_name = st.selectbox(
+            'Select Project:',
+            projects,
+            index=0
+        )
+
+    query = st.text_input('', placeholder='Ask anything about Tonkin projects')
 
     project_path = os.path.join(project_folder, project_name)
     out_json = os.path.join(project_path, 'embedded_chunks.json')
