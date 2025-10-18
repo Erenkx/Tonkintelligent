@@ -3,6 +3,7 @@ Embeds text chunks using OpenAI and saves the embeddings to
 a .npy file or embedded_chunks.json with metadata.
 """
 
+import os
 import json
 
 import numpy as np
@@ -14,17 +15,17 @@ def _load_chunks(
 ) -> list[dict]:
     """
     Loads text chunks from a JSON file.
-    
+
     Args:
         path (str): Path to the JSON file containing text chunks.
-        
+
     Returns:
-        list[dict]: List of dictionaries containing text chunks and 
+        list[dict]: List of dictionaries containing text chunks and
             metadata.
     """
     with open(path, 'r', encoding='utf-8') as fin:
         return json.load(fin)
-    
+
 
 def _save_embeddings_npy(
     embeddings: np.ndarray,
@@ -32,7 +33,7 @@ def _save_embeddings_npy(
 ) -> None:
     """
     Saves embeddings to a .npy file.
-    
+
     Args:
         embeddings (np.ndarray): Array of embeddings.
         output_path (str): Path to save the .npy file.
@@ -48,19 +49,19 @@ def _save_embedded_chunks(
 ) -> None:
     """
     Saves text chunks along with their embeddings to a JSON file.
-    
+
     Args:
-        chunks (list[dict]): List of dictionaries containing text 
+        chunks (list[dict]): List of dictionaries containing text
             chunks and metadata.
         embeddings (np.ndarray): Array of embeddings.
         output_path (str): Path to save the JSON file.
     """
     for chunk, embedding in zip(chunks, embeddings):
         chunk['embedding'] = embedding.tolist()
-    
+
     with open(output_path, 'w', encoding='utf-8') as fout:
         json.dump(chunks, fout, ensure_ascii=False, indent=4)
-    
+
     print(f'Saved embedded chunks to {output_path}')
 
 
@@ -71,13 +72,13 @@ def _embed_with_openai(
 ) -> np.ndarray:
     """
     Embeds a list of texts using the OpenAI API.
-    
+
     Args:
         client (OpenAI): An instance of the OpenAI client.
         texts (list[str]): List of texts to embed.
         model_name (str): Name of the OpenAI embedding model to use.
             Default is 'text-embedding-3-small'.
-        
+
     Returns:
         np.ndarray: Array of embeddings.
     """
@@ -101,7 +102,7 @@ def embed_chunks(
     Embeds text chunks from a JSON file using OpenAI and
     saves the embeddings to a .npy file or embedded_chunks.json with
     metadata.
-    
+
     Args:
         client (OpenAI): An instance of the OpenAI client.
         input_path (str): Path to the JSON file containing text chunks.
@@ -125,8 +126,52 @@ def embed_chunks(
 
     if out_npy:
         _save_embeddings_npy(embeddings, out_npy)
-    
+
     if out_json:
         _save_embedded_chunks(chunks, embeddings, out_json)
 
     print('-' * 72)
+
+
+def merge_embedded_chunks(
+    project_folder: str,
+    global_folder: str
+):
+    """
+    Merges embedded chunks from multiple projects into a global one.
+
+    Args:
+        project_folder (str): Path to the project folder.
+        global_folder (str): Path to the global folder.
+    """
+    global_embeddings = []
+    global_chunks = []
+
+    for project in os.listdir(project_folder):
+        if project == 'global':
+            continue
+
+        project_path = os.path.join(project_folder, project)
+        emb_path = os.path.join(project_path, 'embeddings.npy')
+        chunk_path = os.path.join(project_path, 'embedded_chunks.json')
+
+        embeddings = np.load(emb_path)
+        with open(chunk_path, 'r', encoding='utf-8') as fin:
+            chunks = json.load(fin)
+
+        global_embeddings.append(embeddings)
+        global_chunks.extend(chunks)
+
+    os.makedirs(global_folder, exist_ok=True)
+    merged_embeddings = np.vstack(global_embeddings)
+    np.save(
+        os.path.join(global_folder, 'embeddings.npy'),
+        merged_embeddings
+    )
+
+    with open(
+        os.path.join(global_folder, 'embedded_chunks.json'),
+        'w',
+        encoding='utf-8'
+    ) as fout:
+        json.dump(global_chunks, fout, ensure_ascii=False, indent=4)
