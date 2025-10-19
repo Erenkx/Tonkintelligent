@@ -6,9 +6,9 @@ Tonkin has decades of valuable legacy project data, much of it is siloed, unstru
 
 ## Table of Contents
 
-- [Setup Environment](#-setup-environment)
-- [Data Preparation](#-data-preparation)
-- [Usage](#-usage)
+- [Setup Environment](#setup-environment)
+- [Data Preparation](#data-preparation)
+- [Usage](#usage)
 
 ## Setup Environment
 
@@ -32,7 +32,7 @@ chmod +x ./install.sh
 - Create the Conda environment `tonkintelligent`
 - Install all Python dependencies listed in `requirements.txt`
 
-Once finished, your environment is ready to go!
+Once finished, your environment is ready to go :)
 
 ## Data Preparation
 
@@ -48,7 +48,8 @@ chmod +x ./build.sh
 ```
 
 2. Set your OpenAI APY key:
-   Copy your OpenAI API key into a plain text file at:
+
+Copy your OpenAI API key into a plain text file at:
 
 ```
 code/OPENAI_API_KEY.txt
