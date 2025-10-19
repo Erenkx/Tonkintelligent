@@ -1,8 +1,14 @@
+"""
+Implements a Streamlit app for answering questions about Tonkin's projects
+using RAG.
+"""
+
 import os
 import json
 
 import streamlit as st
 
+from pdf_preview import display_pdf_preview
 from faiss_search import load_index, embed_query, search_faiss_index
 from rag import format_prompt, load_openai_api_key, call_openai_model
 
@@ -14,8 +20,10 @@ MODEL_ENUM = {
 }
 
 TONKIN_LOGO_URL = 'https://d2pszc44x0pp45.cloudfront.net/release-20250916/assets/tonkin-logo-d7693593.svg'
-
 TONKIN_LOGO_COLOR = '#5E3F99'
+
+PROJECT_TOP_K = 5
+GLOBAL_TOP_K = 20
 
 
 def main():
@@ -48,7 +56,9 @@ def main():
         """,
         unsafe_allow_html=True
     )
-    st.write("Search Tonkin's legacy project data with AI-powered retrieval.")
+    st.write(
+        '**Search Tonkin\'s legacy project data with AI-powered retrieval.**'
+    )
 
     project_folder = os.path.join(
         os.path.dirname(__file__), '..', 'data', 'projects'
@@ -70,8 +80,17 @@ def main():
             index=0
         )
 
-    query = st.text_input('', placeholder='Ask anything about Tonkin projects')
+    query = st.text_input(
+        'Query', 
+        placeholder='Ask anything about Tonkin projects',
+        label_visibility='hidden'
+    )
 
+    if project_name == 'All Projects':
+        project_name = 'global'
+        topk = GLOBAL_TOP_K
+    else:
+        topk = PROJECT_TOP_K
     project_path = os.path.join(project_folder, project_name)
     out_json = os.path.join(project_path, 'embedded_chunks.json')
     faiss_index = os.path.join(project_path, 'faiss_index.index')
@@ -90,7 +109,7 @@ def main():
             top_indices = search_faiss_index(
                 index=index,
                 query_embedding=query_embedding,
-                top_k=3
+                top_k=topk
             )
             chunks = json.load(open(out_json, 'r'))
             prompt = format_prompt(
@@ -103,16 +122,20 @@ def main():
                 prompt=prompt,
                 model_name=MODEL_ENUM[model]
             )
-
-            st.subheader('Response:')
             st.success(response)
 
-            st.subheader('Related Chunks:')
+            st.write('**Related Pages**:')
             for idx in top_indices:
-                st.markdown(
-                    f'**Source**: {chunks[idx]["metadata"]["source"]} '
-                    f'(Page {chunks[idx]["metadata"]["page_number"]})'
-                )
+                source = chunks[idx]['metadata']['source']
+                pdf_path = chunks[idx]['metadata']['path']
+                page_number = chunks[idx]['metadata']['page_number']
+
+                with st.expander(f'**Source**: {source} (Page {page_number})'):
+                    display_pdf_preview(
+                        pdf_path=pdf_path,
+                        page_number=page_number,
+                        width=600
+                    )
 
 
 if __name__ == "__main__":
