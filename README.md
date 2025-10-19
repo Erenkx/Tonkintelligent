@@ -36,7 +36,7 @@ Once finished, your environment is ready to go!
 
 ## Data Preparation
 
-Please refer to [Tonkintelligent/data](https://github.com/Erenkx/Tonkintelligent.git/tree/main/data) for expected folder structure and guidance on preparing your project data.
+Please refer to [Tonkintelligent/data](https://github.com/Erenkx/Tonkintelligent/tree/main/data) for expected folder structure and guidance on preparing your project data.
 
 ## Usage
 
