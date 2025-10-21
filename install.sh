@@ -55,7 +55,7 @@ fi
 CONDA_BASE="$(conda info --base)"
 source "$CONDA_BASE/etc/profile.d/conda.sh"
 
-ensure_conda_tos_acceptance
+ensure_conda_tos_acceptance # Comment this line out if you have already accepted the ToS on the Conda website manually
 
 # ------------------------
 # Create Conda Environment
