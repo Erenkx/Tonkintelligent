@@ -74,6 +74,7 @@ def main():
         )
 
         projects.insert(0, 'All Projects')
+        projects.remove('global')
         project_name = st.selectbox(
             'Select Project:',
             projects,
